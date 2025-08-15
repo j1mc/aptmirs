@@ -55,8 +55,8 @@ Mirror *arm64* and *amd64* packages, and also download the *amd64* debian instal
 deb [arch=arm64 arch=amd64 di_arch=amd64] http://ftp.se.debian.org/debian  trixie  main contrib non-free non-free-firmware
 ```
 
-Mirror *amd64* packages and verify the PGP signature with a key in the specified directory:
-Requires that the `--pgp-key-path` command option be set when syncing the mirror.
+Mirror *amd64* packages and verify the PGP signature with a key in the specified directory.
+Requires that the `--pgp-key-path` command option be set when syncing the mirror:
 
 ```
 deb [arch=amd64 pgp_verify=true] http://ftp.se.debian.org/debian  trixie  main contrib non-free non-free-firmware
@@ -87,7 +87,7 @@ options. There are three operations: `mirror`, `prune` and `verify`.
 | ---------------| ------------ | ------------- | ----------- |
 | --config       | -c           | CONFIG=       | The path to the config file containing the mirror options. [default: /etc/apt/mirror.list] |
 | --force        | -f           | FORCE=        | Ignore the current release and package files and assume all metadata is stale. |
-| --dl-threads   | -d           | DL_THREADS=   | The maximum number of concurrent mirror download tasks. *Works only with the `mirror` command*. [default: 8] |
+| --dl-threads   | -d           | DL_THREADS=   | The maximum number of concurrent mirror download tasks. *Works only with the `mirror` & `verify` commands*. [default: 8] |
 | --dry-run      | -d           |               | Prints the files that the prune operation would delete. *Works only with the `prune` command*. |
 | --output       | -o           | OUTPUT=       | The directory into where the mirrors will be downloaded. |
 | --pgp-key-path | -p           | PGP_KEY_PATH= | Path to folder where PGP public keys reside. All valid keys will be used in signature verification where applicable. |

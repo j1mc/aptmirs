@@ -262,22 +262,25 @@ fn sanitize_name(part: &str) -> CompactString {
 }
 
 fn create_tmp_dir(url: &Url, suite: &str, base_dir: &FilePath) -> Result<FilePath> {
-    let Some(host) = url.host() else {
-        return Err(MirsError::UrlParsing { url: url.to_compact_string() })
-    };
-
-    let path = url.path();
-
-    let path_part = if path == "/" {
-        CompactString::new("")
+    let repo_name = if let Some(path_name) = url.path()
+        .trim_end_matches('/')
+        .split('/')
+        .last()
+        .filter(|name| !name.is_empty())
+    {
+        path_name.to_string()
+    } else if let Some(host) = url.host() {
+        // If no path component, use the hostname for repositories at root
+        host.to_string()
     } else {
-        sanitize_name(path)
+        "repo".to_string()
     };
-    
+
+    let repo_part = sanitize_name(&repo_name);
     let suite_part = sanitize_name(suite);
 
     let tmp_dir = base_dir
-        .join(format_compact!(".tmp/{host}{path_part}_{suite_part}"));
+        .join(format_compact!(".tmp/{repo_part}_{suite_part}"));
 
     match std::fs::metadata(&tmp_dir) {
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
@@ -295,16 +298,20 @@ fn create_tmp_dir(url: &Url, suite: &str, base_dir: &FilePath) -> Result<FilePat
 }
 
 fn local_dir_from_archive_url(url: &Url, dir: &FilePath) -> Result<FilePath> {
-    let Some(host) = url.host() else {
-        return Err(MirsError::UrlParsing { url: url.to_compact_string() })
+    let repo_name = if let Some(path_name) = url.path()
+        .trim_end_matches('/')
+        .split('/')
+        .last()
+        .filter(|name| !name.is_empty()) 
+    {
+        path_name.to_string()
+    } else {
+        // If no path component, use the hostname for repositories at root
+        url.host()
+            .map(|host| host.to_string())
+            .ok_or_else(|| MirsError::UrlParsing { url: url.to_compact_string() })?
     };
 
-    let mut base_dir = dir
-        .join(host.to_compact_string());
-
-    if let Some(path) = url.path().strip_prefix('/') {
-        base_dir = base_dir.join(path);
-    }
-
+    let base_dir = dir.join(repo_name);
     Ok(base_dir)
 }
